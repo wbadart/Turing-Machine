@@ -21,15 +21,15 @@ class TM:
 
         # Read in all lines from definition file
         #   Strip whitespace from line endings
-        lines = [l.rstrip() for l in defn_fs.readlines()\
-                if l.rstrip()]
+        #   Ignore empty lines
+        lines = [l.rstrip() for l in defn_fs if l.rstrip()]
 
-        # Set TM properties acording to the input file and
-        #   the format specified in the project spec
+        # Set TM properties according to the input file
+        #   and the format given in the project spec
         self.name = lines[0]
         self.E    = lines[1].split(',')  # sigma
         self.G    = self.E + [lines[2]]  # gamma
-        self.Q    = lines[3].split(',')
+        self.Q    = lines[3].split(',')  # state set
         self.q0   = lines[4]             # initial state
         self.qA   = lines[5]             # accept stats
         self.qR   = lines[6]             # reject state
@@ -43,13 +43,14 @@ class TM:
             lhs, rhs = [h.split(',') for h in l.split('|')]
 
             # Dump the rule to stdout
-            print 'Rule#{}:{}|{}'.format(i + 1,\
-                    *[','.join(s) for s in [lhs, rhs]])
+            print 'Rule#{}:{}|{}'.format(
+                    i + 1
+                  , *map(','.join, [lhs, rhs])
+                  )
 
             # Log the mapping in self.d
             #    i + 1 is recorded as the rule number
-            self.d[(lhs[0], lhs[1])] =\
-                    (rhs[0], rhs[1], rhs[2], i + 1)
+            self.d[tuple(lhs)] = tuple(rhs + [i + 1])
 
         # Print a newline for readability
         print
@@ -68,16 +69,18 @@ class TM:
                 .format(self.name, test_fs.name)
 
         # Parse the strings and strip trailing whitespace
-        strings = [l.rstrip() for l in test_fs.readlines()]
+        strings = [l.rstrip() for l in test_fs]
         for s in strings:
 
             # DFA-like:
             #  Print string acceptance and final
             #  tape configutation
-            print '{}:{}\n'.format(\
-                    'Accepted' if self.test_string(s)\
-                        else 'Rejected',
-                    ''.join(self.tape))
+            print '{}:{}\n'.format(
+                    'Accepted'
+                        if self.test_string(s)
+                        else 'Rejected'
+                  , ''.join(self.tape)
+                  )
 
 
     #####################
@@ -109,20 +112,18 @@ class TM:
                 return False
 
             # Report current configuration
-            print '{}@{}#{}:{},{}|{},{},{}'.format(\
+            print '{}@{}#{}:{},{}|{},{},{}'.format(
                     stepno
-                  , self.head\
-                    # rule number
-                  , rhs[3]\
-                  , self.q\
-                  , self.tape[self.head]\
-                    # new state
-                  , rhs[0]\
-                    # new tape symbol
-                  , rhs[1]\
+                  , self.head
+                  , rhs[3]  # rule number
+                  , self.q
+                  , self.tape[self.head]
+                  , rhs[0]  # new state
+                  , rhs[1]  # write symbol
+
                     # new tape index
-                  , self.head - 1 if rhs[2] == 'L'\
-                          else self.head + 1\
+                  , self.head + 1 if rhs[2] == 'R'
+                          else self.head + 1
                   )
 
             # Transition to next state, perform

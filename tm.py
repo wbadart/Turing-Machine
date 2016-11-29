@@ -60,9 +60,12 @@ def try_read(fname):
 if __name__ == '__main__':
 
     # Parse command line options
-    opts, args = getopt(sys.argv[1:], 'h')
+    try:
+        opts, args = getopt(sys.argv[1:], 'h', ['help'])
+    except Exception as e:
+        error(e)
     for o, a in opts:
-        if(o == '-h'):
+        if o == '-h' or o == '--help':
             usage()
 
     # Sanity checks:
