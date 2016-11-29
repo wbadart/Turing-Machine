@@ -128,6 +128,7 @@ class TM:
             # Transition to next state, perform
             #   tape operations
             self.transition(rhs)
+            stepno += 1
 
         return self.accepting()
 
