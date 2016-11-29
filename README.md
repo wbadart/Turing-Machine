@@ -28,3 +28,21 @@ The specifications for the student test machine are in
 lists of strings that M4 should accept and reject,
 respectively.
 
+Output
+------
+
+This snippet contains the commands to recreate the output
+dump.
+
+```
+for m in `ls M?.txt`; do
+    n=`echo $m | cut -b 2`
+    if [ -e M$n-Accept.txt ]; then
+        ./tm.py $m M$n-Accept.txt >> output.dump
+    fi
+    if [ -e M$n-Reject.txt ]; then
+        ./tm.py $m M$n-Reject.txt >> output.dump
+    fi
+done
+```
+
